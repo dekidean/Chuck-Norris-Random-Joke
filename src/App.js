@@ -4,9 +4,9 @@ import ChuckNorrisRandomJoke from "./ChuckNorrisRandomJoke";
 
 function App() {
   return (
-    <div>
+    <>
       <ChuckNorrisRandomJoke />
-    </div>
+    </>
   );
 }
 

@@ -2,79 +2,62 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 const ChuckNorrisRandomJoke = () => {
-  // State za kategorije
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  // Za sale
-  const [joke, setJoke] = useState("");
+  const [categories, setCategories] = useState([]); // State za skladistenje joke kategorija
+  const [selectedCategory, setSelectedCategory] = useState(""); // State selektovanje kategorija
+  const [joke, setJoke] = useState(""); // State to skladistenje fetched joke
 
-  // Fetch kategorija
-  useEffect(() => {
-    axios
-      .get("https://api.chucknorris.io/jokes/categories")
-      .then((response) => {
-        setCategories(response.data); // skladistenje kategorija
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
-  }, []);
+  const API_ROOT = "https://api.chucknorris.io/jokes"; //API  koji koristimo da se ne bi ponavljali
 
-  // Funkcija za fetchovanje random fora
-  const fetchRandomJoke = () => {
-    let apiUrl = "https://api.chucknorris.io/jokes/random";
-
-    // Ako je kategorija selektovana, ubaci URL
-    if (selectedCategory) {
-      apiUrl = `https://api.chucknorris.io/jokes/random?category=${selectedCategory}`;
+  // Funkcija za fetch kategorija za API
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_ROOT}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
     }
-
-    // Fetchrandom sale
-    axios
-      .get(apiUrl)
-      .then((response) => {
-        setJoke(response.data.value); // Setovanje sale u state-u
-      })
-      .catch((error) => {
-        console.error("Error fetching the joke:", error);
-      });
   };
 
+  // Funkcija za fetch za random joke
+  const fetchJoke = async () => {
+    try {
+      const url = selectedCategory
+        ? `${API_ROOT}/random?category=${selectedCategory}`
+        : `${API_ROOT}/random`;
+      const response = await axios.get(url);
+      setJoke(response.data.value);
+    } catch (error) {
+      console.error("Error fetching the joke:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   return (
-    <div>
+    <>
       <h1>Chuck Norris Jokes</h1>
 
-      {/* Selektovanje komponente za sala kategorije */}
-      <div>
-        <label htmlFor="category-select">Select a Joke Category:</label>
-        <select
-          id="category-select"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="">Any Category</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Selektovanje komponente za display kategorije */}
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+      >
+        <option value="">Select a category</option>
+        {categories.map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
 
-      {/* Dugme za Fetchovanje Random sale */}
-      <div>
-        <button onClick={fetchRandomJoke}>Get a Random Joke</button>
-      </div>
+      {/* Button za fetchvanje random joke */}
+      <button onClick={fetchJoke}>Get Random Joke</button>
 
-      {/* Prikazi */}
-      <div>
-        {joke && (
-          <p>
-            <strong>Joke:</strong> {joke}
-          </p>
-        )}
-      </div>
-    </div>
+      {/* Prikaz fore joke */}
+      <p>{joke}</p>
+    </>
   );
 };
 
